@@ -14,11 +14,18 @@ using (Socket socket = server.AcceptSocket())
     string RequestString = Encoding.ASCII.GetString(RequestBuff);
 
     string Path = ExtractHttpPath(RequestString);
+    var SplittedPath = Path.Split('/');
+    Debug.Assert(SplittedPath.Length == 3);
+
 
     byte[] ResponseBuff = new byte[1024];
-    if (Path == "/")
+    if (SplittedPath[1].ToLower() == "echo")
     {
-        ResponseBuff = Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
+        string ReceivedEcho = SplittedPath[2];
+        ResponseBuff = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK" +
+            $"\r\nContent-Type: text/plain" +
+            $"\r\nContent-Length: {ReceivedEcho.Length}" +
+            $"\r\n\r\n{ReceivedEcho}");
     }
     else
     {
