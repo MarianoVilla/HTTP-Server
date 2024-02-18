@@ -7,9 +7,6 @@ Console.WriteLine("Init");
 
 TcpListener server = new TcpListener(IPAddress.Any, 4221);
 server.Start();
-
-//while (true)
-//{
 using (Socket socket = server.AcceptSocket())
 {
     var RequestBuff = new byte[1024];
@@ -38,7 +35,7 @@ using (Socket socket = server.AcceptSocket())
         return;
     }
     ResponseBuff = Encoding.ASCII.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
-    return;
+    socket.Send(ResponseBuff);
 }
 
 string ExtractHttpPath(string? RequestString)
