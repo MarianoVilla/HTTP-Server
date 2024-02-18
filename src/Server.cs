@@ -33,7 +33,10 @@ using (Socket socket = server.AcceptSocket())
                     $"\r\nContent-Length: {ReceivedEcho.Length}" +
                     $"\r\n\r\n{ReceivedEcho}");
             }
-
+            else
+            {
+                ResponseBuff = Encoding.ASCII.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+            }
         }
         else
         {
