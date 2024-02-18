@@ -14,22 +14,31 @@ using (Socket socket = server.AcceptSocket())
     string RequestString = Encoding.ASCII.GetString(RequestBuff);
 
     string Path = ExtractHttpPath(RequestString);
-    var SplittedPath = Path.Split('/');
-    Debug.Assert(SplittedPath.Length == 3);
-
-
     byte[] ResponseBuff = new byte[1024];
-    if (SplittedPath[1].ToLower() == "echo")
+
+    if(Path == "/")
     {
-        string ReceivedEcho = SplittedPath[2];
-        ResponseBuff = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK" +
-            $"\r\nContent-Type: text/plain" +
-            $"\r\nContent-Length: {ReceivedEcho.Length}" +
-            $"\r\n\r\n{ReceivedEcho}");
+        ResponseBuff = Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
     }
     else
     {
-        ResponseBuff = Encoding.ASCII.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+        string[] SplittedPath = Path.Split('/');
+        if(SplittedPath.Length == 3)
+        {
+            if (SplittedPath[1].ToLower() == "echo")
+            {
+                string ReceivedEcho = SplittedPath[2];
+                ResponseBuff = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK" +
+                    $"\r\nContent-Type: text/plain" +
+                    $"\r\nContent-Length: {ReceivedEcho.Length}" +
+                    $"\r\n\r\n{ReceivedEcho}");
+            }
+
+        }
+        else
+        {
+            ResponseBuff = Encoding.ASCII.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+        }
     }
 
     socket.Send(ResponseBuff);
