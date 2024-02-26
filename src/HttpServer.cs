@@ -46,6 +46,7 @@ namespace codecrafters_http_server.src
                 var Response = HandleEcho(ParsedRequest.RequestUri);
 
                 var httpResponse = HttpResponse.Ok(ServerHttpVersion,
+                    //ToDo: extract headers into constants
                     new Dictionary<string, string>
                     {
                         { "Content-Type", "text/plain" },
@@ -53,6 +54,19 @@ namespace codecrafters_http_server.src
                     }, Response);
                     var ResponseAsString = httpResponse.ToString();
                 return DefaultEncoding.GetBytes(ResponseAsString);
+            }
+
+            if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith("/user-agent"))
+            {
+                var UserAgent = ParsedRequest.Headers["User-Agent"]?.Trim();
+                var Response = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
+                //ToDo: extract headers into constants
+                {
+                    { "Content-Type", "text/plain" },
+                    { "Content-Length", UserAgent?.Length.ToString() ?? "0" }
+                },
+                UserAgent);
+                return DefaultEncoding.GetBytes(Response.ToString());
             }
 
             return DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString());

@@ -15,7 +15,7 @@ namespace codecrafters_http_server.src
         protected string StartLine { get; set; }
         public string? Body { get; set; }
 
-        protected Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Headers { get; protected set; } = new Dictionary<string, string>();
         public HttpMessage(string RawMessageString)
         {
             if (string.IsNullOrWhiteSpace(RawMessageString))
@@ -32,12 +32,27 @@ namespace codecrafters_http_server.src
             StartLine = MessageLines[0];
             ProcessStartLine(StartLine);
 
+            foreach(var L in MessageLines.Skip(1))
+            {
+                if (L.Contains(":"))
+                {
+                    var SplittedLine = L.Split(':');
+                    Headers.Add(SplittedLine[0], SplittedLine[1]);
+                }
+            }
+
+            //ProcessHeaders(MessageLines.TakeWhile(x => x != $"{CRLF}{CRLF}"));
+
         }
         public HttpMessage()
         {
             
         }
         protected abstract void ProcessStartLine(string StartLine);
+        protected void ProcessHeaders(IEnumerable<string> Headers)
+        {
+            this.Headers = Headers.Select(x => x.Split(':')).ToDictionary(h => h[0], h => h[1]);
+        }
 
         public override string ToString() => 
                    $"{StartLine}{CRLF}" +
