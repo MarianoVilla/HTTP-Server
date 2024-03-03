@@ -31,14 +31,14 @@ namespace codecrafters_http_server.src
             TcpListener Server = new TcpListener(Ip, PortNumber);
             Server.Start();
             Logger.LogInformation($"Started server on {Ip}:{PortNumber}");
-            while (!ShouldStop)
-            {
+            //while (!ShouldStop)
+            //{
                 Socket socket = Server.AcceptSocket();
                 var RequestBuff = new byte[MaxRecvBytes];
                 int ReceivedBytesCount = socket.Receive(RequestBuff);
                 Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
                 Task.Run(async () => await ProcessRequest(RequestBuff, socket));
-            }
+            //}
         }
         public void Stop()
         {

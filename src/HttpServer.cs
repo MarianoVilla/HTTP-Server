@@ -27,6 +27,7 @@ namespace codecrafters_http_server.src
         {
             try
             {
+                await Task.Delay(1000);
                 Logger.LogInformation($"------- Thread {Thread.CurrentThread.Name} {Thread.CurrentThread.ManagedThreadId} processing request");
                 string RequestString = DefaultEncoding.GetString(Bytes);
                 Logger.LogInformation($"{nameof(RequestString)}: {RequestString}");
