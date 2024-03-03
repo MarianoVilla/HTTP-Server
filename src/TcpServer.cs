@@ -37,7 +37,8 @@ namespace codecrafters_http_server.src
                 var RequestBuff = new byte[MaxRecvBytes];
                 int ReceivedBytesCount = socket.Receive(RequestBuff);
                 Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
-                await Task.Run(async () => await ProcessRequest(RequestBuff, socket));
+                await ProcessRequest(RequestBuff, socket);
+                //await Task.Run(async () => );
             }
         }
         public void Stop()
