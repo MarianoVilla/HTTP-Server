@@ -9,4 +9,4 @@ using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsol
 ILogger Logger = factory.CreateLogger("Program");
 var Server = new HttpServer(IPAddress.Any, 4221, Logger);
 
-await Server.StartAsync();
+Server.Start();

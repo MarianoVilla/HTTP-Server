@@ -23,11 +23,14 @@ namespace codecrafters_http_server.src
         {
         }
 
-        protected override async Task ProcessRequest(byte[] Bytes, Socket socket)
+        protected override async Task ProcessRequest(Socket socket)
         {
             try
             {
-                await Task.Delay(1000);
+                var Bytes = new byte[MaxRecvBytes];
+                int ReceivedBytesCount = await socket.ReceiveAsync(Bytes, SocketFlags.None);
+                Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
+                //await Task.Delay(1000);
                 Logger.LogInformation($"------- Thread {Thread.CurrentThread.Name} {Thread.CurrentThread.ManagedThreadId} processing request");
                 string RequestString = DefaultEncoding.GetString(Bytes);
                 Logger.LogInformation($"{nameof(RequestString)}: {RequestString}");

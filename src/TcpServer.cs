@@ -26,7 +26,7 @@ namespace codecrafters_http_server.src
         }
 
 
-        public async Task StartAsync()
+        public void Start()
         {
             TcpListener Server = new TcpListener(Ip, PortNumber);
             Server.Start();
@@ -34,18 +34,14 @@ namespace codecrafters_http_server.src
             while (!ShouldStop)
             {
                 Socket socket = Server.AcceptSocket();
-                var RequestBuff = new byte[MaxRecvBytes];
-                int ReceivedBytesCount = socket.Receive(RequestBuff);
-                Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
-                await ProcessRequest(RequestBuff, socket);
-                //await Task.Run(async () => );
+                _ = Task.Run(async () => await ProcessRequest(socket));
             }
-        }
+    }
         public void Stop()
         {
             ShouldStop = true;
         }
-        protected abstract Task ProcessRequest(byte[] Bytes, Socket socket);
+        protected abstract Task ProcessRequest(Socket socket);
 
     }
 }
