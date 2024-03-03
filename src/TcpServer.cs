@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,24 +31,20 @@ namespace codecrafters_http_server.src
             TcpListener Server = new TcpListener(Ip, PortNumber);
             Server.Start();
             Logger.LogInformation($"Started server on {Ip}:{PortNumber}");
-            //while (!ShouldStop)
-            //{
-                using (Socket socket = Server.AcceptSocket())
-                {
-                        var RequestBuff = new byte[MaxRecvBytes];
-                        int ReceivedBytesCount = socket.Receive(RequestBuff);
-                        Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
-                        byte[] Response = ProcessRequest(RequestBuff);
-                        socket.Send(Response);
-                }
-            //}
-
+            while (!ShouldStop)
+            {
+                Socket socket = Server.AcceptSocket();
+                var RequestBuff = new byte[MaxRecvBytes];
+                int ReceivedBytesCount = socket.Receive(RequestBuff);
+                Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
+                Task.Run(async () => await ProcessRequest(RequestBuff, socket));
+            }
         }
         public void Stop()
         {
             ShouldStop = true;
         }
-        protected abstract byte[] ProcessRequest(byte[] Bytes);
+        protected abstract Task ProcessRequest(byte[] Bytes, Socket socket);
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -31,27 +32,25 @@ namespace codecrafters_http_server.src
 
             StartLine = MessageLines[0];
             ProcessStartLine(StartLine);
-
-            foreach(var L in MessageLines.Skip(1))
-            {
-                if (L.Contains(":"))
-                {
-                    var SplittedLine = L.Split(':');
-                    Headers.Add(SplittedLine[0], SplittedLine[1]);
-                }
-            }
-
-            //ProcessHeaders(MessageLines.TakeWhile(x => x != $"{CRLF}{CRLF}"));
-
+            ProcessHeaders(MessageLines.Skip(1));
         }
         public HttpMessage()
         {
             
         }
         protected abstract void ProcessStartLine(string StartLine);
-        protected void ProcessHeaders(IEnumerable<string> Headers)
+        protected void ProcessHeaders(IEnumerable<string> RawHeaders)
         {
-            this.Headers = Headers.Select(x => x.Split(':')).ToDictionary(h => h[0], h => h[1]);
+            foreach (var RH in RawHeaders)
+            {
+                if (RH == "")
+                    break;
+                if (RH.Contains(":"))
+                {
+                    var SplittedLine = RH.Split(':');
+                    Headers.Add(SplittedLine[0], string.Join(':', SplittedLine[1..]));
+                }
+            }
         }
 
         public override string ToString() => 
