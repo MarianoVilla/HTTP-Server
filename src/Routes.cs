@@ -11,6 +11,7 @@ namespace codecrafters_http_server.src
         public const string Base = "/";
         public const string Echo = "/echo";
         public const string UserAgent = "/user-agent";
+        public const string Files = "/files";
         
     }
 }

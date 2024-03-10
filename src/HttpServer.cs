@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -18,10 +19,13 @@ namespace codecrafters_http_server.src
         };
         private Encoding DefaultEncoding = Encoding.ASCII;
         private string ServerHttpVersion = "HTTP/1.1";
+        public string? Dir { get; }
 
-        public HttpServer(IPAddress Ip, ushort PortNumber, ILogger Logger) 
+        public HttpServer(IPAddress Ip, ushort PortNumber, ILogger Logger, string? Dir) 
             : base(Ip, PortNumber, Logger)
         {
+            Logger.LogInformation($"Server base dir: {Dir}");
+            this.Dir = Dir;
         }
 
         protected override async Task ProcessRequestAsync(Socket socket)
@@ -61,31 +65,13 @@ namespace codecrafters_http_server.src
                         await UserAgent(ParsedRequest);
                         break;
 
-                    default: 
-                        await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString()), SocketFlags.None); 
-                        break; 
+                    case var uri when uri.StartsWith(Routes.Files):
+                        await Files(ParsedRequest);
+                        break;
+                    default:
+                        await NotFound();
+                        break;
                 }
-
-                //if (ParsedRequest.RequestUri == Routes.Base)
-                //{
-                //    await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.Ok(ServerHttpVersion).ToString()), SocketFlags.None);
-                //    return;
-                //}
-
-                //if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith(Routes.Echo))
-                //{
-                //    await Echo(ParsedRequest);
-                //    return;
-                //}
-
-                //if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith(Routes.UserAgent))
-                //{
-                //    await UserAgent(ParsedRequest);
-                //    return;
-                //}
-
-                //await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString()), SocketFlags.None);
-                //return;
             }
             catch (Exception ex)
             {
@@ -98,6 +84,7 @@ namespace codecrafters_http_server.src
 
             async Task Echo(HttpRequest ParsedRequest)
             {
+                Logger.LogInformation($"Handling {MethodBase.GetCurrentMethod()?.Name}");
                 var Response = ParsedRequest.RequestUri?[$"{Routes.Echo}/".Length..];
                 var httpResponse = HttpResponse.Ok(ServerHttpVersion,
                     new Dictionary<string, string>
@@ -111,6 +98,7 @@ namespace codecrafters_http_server.src
 
             async Task UserAgent(HttpRequest ParsedRequest)
             {
+                Logger.LogInformation($"Handling {MethodBase.GetCurrentMethod()?.Name}");
                 var UserAgent = ParsedRequest.Headers[HttpHeaderConstants.UserAgent]?.Trim();
                 var Response = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
                     {
@@ -118,6 +106,37 @@ namespace codecrafters_http_server.src
                         { HttpHeaderConstants.ContentLength, UserAgent?.Length.ToString() ?? "0" }
                     }, UserAgent);
                 await socket.SendAsync(DefaultEncoding.GetBytes(Response.ToString()), SocketFlags.None);
+            }
+            async Task Files(HttpRequest ParsedRequest)
+            {
+                Logger.LogInformation($"Handling {MethodBase.GetCurrentMethod()?.Name}");
+                var SplittedUri = ParsedRequest.RequestUri?.Split('/');
+                if (SplittedUri is null || SplittedUri.Length < 3)
+                {
+                    Logger.LogError("Expected a filename, fucking hell!");
+                    await NotFound();
+                }
+                var TargetFile = SplittedUri[2];
+                if (File.Exists(TargetFile))
+                {
+                    var FileContents = await File.ReadAllTextAsync(TargetFile);
+                    var FileResponse = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
+                    {
+                        { HttpHeaderConstants.ContentType, HttpHeaderConstants.OctetStream },
+                        { HttpHeaderConstants.ContentLength, FileContents.Length.ToString() }
+                    }, FileContents);
+                    await socket.SendAsync(DefaultEncoding.GetBytes(FileResponse.ToString()), SocketFlags.None);
+                }
+                else
+                {
+                    await NotFound();
+                }
+            }
+
+            async Task NotFound()
+            {
+                Logger.LogInformation($"Handling {MethodBase.GetCurrentMethod()?.Name}");
+                await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString()), SocketFlags.None);
             }
         }
     }

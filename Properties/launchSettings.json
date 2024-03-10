@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "codecrafters-http-server": {
+      "commandName": "Project",
+      //"commandLineArgs": "--directory .",
+      "hotReloadEnabled": false
+    }
+  }
+}
