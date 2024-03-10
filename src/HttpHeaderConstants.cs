@@ -13,6 +13,6 @@ namespace codecrafters_http_server.src
         public const string TextPlain = "text/plain";
         public const string ContentLength = "Content-Length";
         public const string UserAgent = "User-Agent";
-        public const string OctetStream = "octet-stream";
+        public const string OctetStream = "application/octet-stream";
     }
 }
