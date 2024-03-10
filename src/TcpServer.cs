@@ -34,12 +34,9 @@ namespace codecrafters_http_server.src
             while (!ShouldStop)
             {
                 Socket socket = Server.AcceptSocket();
-                //var Bytes = new byte[MaxRecvBytes];
-                //int ReceivedBytesCount = socket.Receive(Bytes);
-                //Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
                 _ = Task.Run(async () => await ProcessRequestAsync(socket));
             }
-    }
+        }
         public void Stop()
         {
             ShouldStop = true;
