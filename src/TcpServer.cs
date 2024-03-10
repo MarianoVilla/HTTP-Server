@@ -26,7 +26,7 @@ namespace codecrafters_http_server.src
         }
 
 
-        public async Task Start()
+        public void Start()
         {
             TcpListener Server = new TcpListener(Ip, PortNumber);
             Server.Start();

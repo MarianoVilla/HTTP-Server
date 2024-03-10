@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace codecrafters_http_server.src
@@ -46,40 +47,45 @@ namespace codecrafters_http_server.src
                     return;
                 }
 
-                if (ParsedRequest.RequestUri == Routes.Base)
+                switch (ParsedRequest.RequestUri.ToUpperInvariant())
                 {
-                    await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.Ok(ServerHttpVersion).ToString()), SocketFlags.None);
-                    return;
+                    case Routes.Base: 
+                        await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.Ok(ServerHttpVersion).ToString()), SocketFlags.None); 
+                        break;
+
+                    case var uri when uri.StartsWith(Routes.Echo):
+                        await Echo(ParsedRequest);
+                        break;
+
+                    case var uri when uri.StartsWith(Routes.UserAgent):
+                        await UserAgent(ParsedRequest);
+                        break;
+
+                    default: 
+                        await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString()), SocketFlags.None); 
+                        break; 
                 }
 
-                if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith(Routes.Echo))
-                {
-                    var Response = HandleEcho(ParsedRequest.RequestUri);
-                    var httpResponse = HttpResponse.Ok(ServerHttpVersion,
-                        new Dictionary<string, string>
-                        {
-                        { HttpHeaderConstants.ContentType, HttpHeaderConstants.TextPlain },
-                        { HttpHeaderConstants.ContentLength, Response?.Length.ToString() ?? "0" }
-                        }, Response);
-                    var ResponseAsString = httpResponse.ToString();
-                    await socket.SendAsync(DefaultEncoding.GetBytes(ResponseAsString), SocketFlags.None);
-                    return;
-                }
+                //if (ParsedRequest.RequestUri == Routes.Base)
+                //{
+                //    await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.Ok(ServerHttpVersion).ToString()), SocketFlags.None);
+                //    return;
+                //}
 
-                if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith(Routes.UserAgent))
-                {
-                    var UserAgent = ParsedRequest.Headers[HttpHeaderConstants.UserAgent]?.Trim();
-                    var Response = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
-                {
-                    { HttpHeaderConstants.ContentType, HttpHeaderConstants.TextPlain },
-                    { HttpHeaderConstants.ContentLength, UserAgent?.Length.ToString() ?? "0" }
-                }, UserAgent);
-                    await socket.SendAsync(DefaultEncoding.GetBytes(Response.ToString()), SocketFlags.None);
-                    return;
-                }
+                //if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith(Routes.Echo))
+                //{
+                //    await Echo(ParsedRequest);
+                //    return;
+                //}
 
-                await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString()), SocketFlags.None);
-                return;
+                //if (ParsedRequest.RequestUri.ToLowerInvariant().StartsWith(Routes.UserAgent))
+                //{
+                //    await UserAgent(ParsedRequest);
+                //    return;
+                //}
+
+                //await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.NotFound(ServerHttpVersion).ToString()), SocketFlags.None);
+                //return;
             }
             catch (Exception ex)
             {
@@ -89,11 +95,30 @@ namespace codecrafters_http_server.src
             {
                 socket.Close();
             }
-        }
-        string HandleEcho(string RequestUri) 
-        {
-            var ReceivedEcho = RequestUri[$"{Routes.Echo}/".Length..];
-            return ReceivedEcho;
+
+            async Task Echo(HttpRequest ParsedRequest)
+            {
+                var Response = ParsedRequest.RequestUri?[$"{Routes.Echo}/".Length..];
+                var httpResponse = HttpResponse.Ok(ServerHttpVersion,
+                    new Dictionary<string, string>
+                    {
+                        { HttpHeaderConstants.ContentType, HttpHeaderConstants.TextPlain },
+                        { HttpHeaderConstants.ContentLength, Response?.Length.ToString() ?? "0" }
+                    }, Response);
+                var ResponseAsString = httpResponse.ToString();
+                await socket.SendAsync(DefaultEncoding.GetBytes(ResponseAsString), SocketFlags.None);
+            }
+
+            async Task UserAgent(HttpRequest ParsedRequest)
+            {
+                var UserAgent = ParsedRequest.Headers[HttpHeaderConstants.UserAgent]?.Trim();
+                var Response = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
+                    {
+                        { HttpHeaderConstants.ContentType, HttpHeaderConstants.TextPlain },
+                        { HttpHeaderConstants.ContentLength, UserAgent?.Length.ToString() ?? "0" }
+                    }, UserAgent);
+                await socket.SendAsync(DefaultEncoding.GetBytes(Response.ToString()), SocketFlags.None);
+            }
         }
     }
 }
