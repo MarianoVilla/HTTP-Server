@@ -109,6 +109,11 @@ namespace codecrafters_http_server.src
             }
             async Task Files(HttpRequest ParsedRequest)
             {
+                if (Dir is null)
+                {
+                    Logger.LogError($"Dir is null, can't handle files!");
+                    await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.BadRequest(ServerHttpVersion).ToString()), SocketFlags.None);
+                }
                 Logger.LogInformation($"Handling {MethodBase.GetCurrentMethod()?.Name}");
                 var SplittedUri = ParsedRequest.RequestUri?.Split('/');
                 if (SplittedUri is null || SplittedUri.Length < 3)
@@ -116,7 +121,7 @@ namespace codecrafters_http_server.src
                     Logger.LogError("Expected a filename, fucking hell!");
                     await NotFound();
                 }
-                var TargetFile = SplittedUri[2];
+                var TargetFile = Path.Combine(Dir, SplittedUri[2]);
                 if (File.Exists(TargetFile))
                 {
                     var FileContents = await File.ReadAllTextAsync(TargetFile);

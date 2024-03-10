@@ -16,5 +16,7 @@ namespace codecrafters_http_server.src
         NotImplemented = 501,
         [Display(Name = "Not Found")]
         NotFound = 404,
+        [Display(Name = "Bad Request")]
+        BadRequest = 400,
     }
 }

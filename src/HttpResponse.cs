@@ -46,6 +46,10 @@ namespace codecrafters_http_server.src
         {
             return new HttpResponse(HttpVersion, HttpStatusCode.NotImplemented);
         }
+        public static HttpResponse BadRequest(string HttpVersion)
+        {
+            return new HttpResponse(HttpVersion, HttpStatusCode.BadRequest);
+        }
         public static HttpResponse NotFound(string HttpVersion)
         {
             return new HttpResponse(HttpVersion, HttpStatusCode.NotFound);
