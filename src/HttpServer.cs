@@ -47,7 +47,7 @@ namespace codecrafters_http_server.src
                     return;
                 }
 
-                switch (ParsedRequest.RequestUri.ToUpperInvariant())
+                switch (ParsedRequest.RequestUri.ToLowerInvariant())
                 {
                     case Routes.Base: 
                         await socket.SendAsync(DefaultEncoding.GetBytes(HttpResponse.Ok(ServerHttpVersion).ToString()), SocketFlags.None); 
