@@ -30,5 +30,7 @@ namespace codecrafters_http_server.src
             RequestUri = SplittedStartLine[1] ?? throw new ArgumentNullException($"{RequestUri} cannot be null!");
             HttpVersion = SplittedStartLine[2] ?? throw new ArgumentNullException($"{HttpVersion} cannot be null!");
         }
+        public bool IsGet => !string.IsNullOrWhiteSpace(Method) && Method == "GET"; 
+        public bool IsPost => !string.IsNullOrWhiteSpace(Method) && Method == "POST"; 
     }
 }

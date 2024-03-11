@@ -14,7 +14,7 @@ namespace codecrafters_http_server.src
         protected string CRLF = "\r\n";
         public string RawMessageString { get; }
         protected string StartLine { get; set; }
-        public string? Body { get; set; }
+        public string? Body { get; protected set; }
 
         public Dictionary<string, string> Headers { get; protected set; } = new Dictionary<string, string>();
         public HttpMessage(string RawMessageString)
@@ -33,7 +33,17 @@ namespace codecrafters_http_server.src
             StartLine = MessageLines[0];
             ProcessStartLine(StartLine);
             ProcessHeaders(MessageLines.Skip(1));
+            ProcessBody(MessageLines.Skip(1).Skip(Headers.Count));
         }
+
+        private void ProcessBody(IEnumerable<string> RawBody)
+        {
+            foreach(var L in RawBody)
+            {
+                Body += L;
+            }
+        }
+
         public HttpMessage()
         {
             

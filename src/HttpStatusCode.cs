@@ -18,5 +18,7 @@ namespace codecrafters_http_server.src
         NotFound = 404,
         [Display(Name = "Bad Request")]
         BadRequest = 400,
+        [Display(Name = "Created")]
+        Created = 201,
     }
 }

@@ -58,5 +58,9 @@ namespace codecrafters_http_server.src
         {
             return new HttpResponse(HttpVersion, HttpStatusCode.OK, Headers, Body);
         }
+        public static HttpResponse Created(string HttpVersion, Dictionary<string, string>? Headers = null)
+        {
+            return new HttpResponse(HttpVersion, HttpStatusCode.Created, Headers);
+        }
     }
 }

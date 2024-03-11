@@ -15,7 +15,8 @@ namespace codecrafters_http_server.src
     {
         private string[] SupportedMethods =
         {
-            "GET"
+            "GET",
+            "POST", 
         };
         private Encoding DefaultEncoding = Encoding.ASCII;
         private string ServerHttpVersion = "HTTP/1.1";
@@ -34,6 +35,7 @@ namespace codecrafters_http_server.src
             {
                 var Bytes = new byte[MaxRecvBytes];
                 int ReceivedBytesCount = await socket.ReceiveAsync(Bytes, SocketFlags.None);
+                Bytes = Bytes[0..ReceivedBytesCount];
                 Logger.LogInformation($"{nameof(ReceivedBytesCount)}: {ReceivedBytesCount}");
 
                 Logger.LogInformation($"------- Thread {Thread.CurrentThread.Name} {Thread.CurrentThread.ManagedThreadId} processing request");
@@ -89,11 +91,12 @@ namespace codecrafters_http_server.src
                 var httpResponse = HttpResponse.Ok(ServerHttpVersion,
                     new Dictionary<string, string>
                     {
-                        { HttpHeaderConstants.ContentType, HttpHeaderConstants.TextPlain },
-                        { HttpHeaderConstants.ContentLength, Response?.Length.ToString() ?? "0" }
+                    { HttpHeaderConstants.ContentType, HttpHeaderConstants.TextPlain },
+                    { HttpHeaderConstants.ContentLength, Response?.Length.ToString() ?? "0" }
                     }, Response);
                 var ResponseAsString = httpResponse.ToString();
                 await socket.SendAsync(DefaultEncoding.GetBytes(ResponseAsString), SocketFlags.None);
+
             }
 
             async Task UserAgent(HttpRequest ParsedRequest)
@@ -122,22 +125,38 @@ namespace codecrafters_http_server.src
                     await NotFound();
                 }
                 var TargetFile = Path.Combine(Dir, SplittedUri[2]);
-                if (File.Exists(TargetFile))
+                if (ParsedRequest.IsGet)
                 {
-                    var FileContents = await File.ReadAllTextAsync(TargetFile);
-                    var FileResponse = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
+                    if (File.Exists(TargetFile))
+                    {
+                        var FileContents = await File.ReadAllTextAsync(TargetFile);
+                        var FileResponse = HttpResponse.Ok(ServerHttpVersion, new Dictionary<string, string>()
                     {
                         { HttpHeaderConstants.ContentType, HttpHeaderConstants.OctetStream },
                         { HttpHeaderConstants.ContentLength, FileContents.Length.ToString() }
                     }, FileContents);
-                    await socket.SendAsync(DefaultEncoding.GetBytes(FileResponse.ToString()), SocketFlags.None);
+                        await SendAsync(FileResponse);
+                    }
+                    else
+                    {
+                        await NotFound();
+                    }
+                }
+                else if (ParsedRequest.IsPost)
+                {
+                    await File.WriteAllTextAsync(TargetFile, ParsedRequest.Body);
+                    await SendAsync(HttpResponse.Created(ServerHttpVersion));
                 }
                 else
                 {
-                    await NotFound();
+                    throw new Exception("WTF!");
                 }
-            }
 
+            }
+            async Task SendAsync(HttpResponse Response)
+            {
+                await socket.SendAsync(DefaultEncoding.GetBytes(Response.ToString()), SocketFlags.None);
+            }
             async Task NotFound()
             {
                 Logger.LogInformation($"Handling {MethodBase.GetCurrentMethod()?.Name}");
