@@ -1,38 +1,11 @@
 [![progress-banner](https://backend.codecrafters.io/progress/http-server/b7da99e2-400a-4465-ab48-d53779986b99)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
 
-This is a starting point for C# solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+# Holi. 
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+En este repo vas a encontrar todo el código del server HTTP que hicimos de cero, usando C#.
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+El banner de arriba te indica en qué paso estamos (en este caso, el proyecto ya está terminado).
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## ¿No entendés nada?
 
-# Passing the first stage
-
-The entry point for your HTTP server implementation is in `src/Server.cs`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
-
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
-```
-
-Time to move on to the next stage!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `dotnet (6.0)` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
-   `src/Server.cs`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+Yo tampoco, pero todo lo que hay en este repo fue explicado y programado **en vivo** en YouTube: [acá](https://youtube.com/playlist?list=PL6ZpaevWeaf8XJzi8NbpRHu0ANsPkvZE-&si=OzvraiJu96oPBQv6) está la lista.
